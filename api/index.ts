@@ -40,7 +40,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     // Handle login
-    if (entity === 'auth' && action === 'login' && req.method === 'POST') {
+    if (entity === 'auth' && id === 'login' && req.method === 'POST') {
       const { email, password } = req.body || {}
       if (!email || !password) {
         return res.status(400).json({ error: 'Email and password are required' })
