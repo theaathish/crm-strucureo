@@ -16,24 +16,6 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import type { Account } from "@/lib/types"
 import { useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount } from "@/hooks/use-accounts"
 
-const columns: ColumnDef<Account>[] = [
-  SelectColumn<Account>(),
-  { accessorKey: "name", header: "Account", cell: ({ row }) => (<div className="flex items-center gap-2.5"><div className="size-8 rounded-lg bg-muted text-foreground text-xs font-bold flex items-center justify-center shrink-0">{row.original.name.slice(0, 2).toUpperCase()}</div><div><p className="font-medium text-foreground">{row.original.name}</p><p className="text-[10px] text-muted-foreground">{row.original.website}</p></div></div>) },
-  { accessorKey: "industry", header: "Industry", cell: ({ row }) => <span className="text-muted-foreground">{row.original.industry}</span> },
-  { accessorKey: "tier", header: "Tier", cell: ({ row }) => <StatusBadge status={row.original.tier} /> },
-  { accessorKey: "health", header: "Health", cell: ({ row }) => <StatusBadge status={row.original.health} /> },
-  { accessorKey: "mrr", header: "MRR", cell: ({ row }) => <span className="font-semibold tabular-nums">${row.original.mrr.toLocaleString()}</span> },
-  { accessorKey: "arr", header: "ARR", cell: ({ row }) => <span className="tabular-nums">${row.original.arr.toLocaleString()}</span> },
-  { accessorKey: "margin", header: "Margin", cell: ({ row }) => (<div className="flex items-center gap-2"><div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden"><div className={`h-full rounded-full ${row.original.margin >= 70 ? "bg-emerald-500" : row.original.margin >= 55 ? "bg-amber-500" : "bg-destructive"}`} style={{ width: `${row.original.margin}%` }} /></div><span className={`text-xs font-medium ${row.original.margin < 55 ? "text-destructive" : ""}`}>{row.original.margin}%</span></div>) },
-  { accessorKey: "employees", header: "Employees", cell: ({ row }) => <span className="text-muted-foreground tabular-nums">{row.original.employees}</span> },
-  { accessorKey: "country", header: "Country", cell: ({ row }) => <span className="text-muted-foreground">{row.original.country}</span> },
-  { id: "actions", size: 40, cell: ({ row }) => (<DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="size-7" onClick={e => e.stopPropagation()}><MoreHorizontal className="size-3.5" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem onClick={() => setDetail(row.original)}><Eye className="size-3.5 mr-2" />View Account</DropdownMenuItem><DropdownMenuItem onClick={() => openEdit(row.original)}><Pencil className="size-3.5 mr-2" />Edit</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => setDeleteTarget(row.original)}><Trash2 className="size-3.5 mr-2" />Archive</DropdownMenuItem></DropdownMenuContent></DropdownMenu>) },
-]
-
-let setDetail: (a: Account | null) => void
-let setDeleteTarget: (a: Account | null) => void
-let openEdit: (a: Account) => void
-
 export function AccountsPage() {
   const [healthFilter, setHealthFilter] = React.useState("all")
   const { data: accounts = [], isLoading } = useAccounts()
@@ -45,9 +27,7 @@ export function AccountsPage() {
   const [dialog, setDialog] = React.useState<{ open: boolean; mode?: "create" | "edit"; account?: Account }>({ open: false })
   const [form, setForm] = React.useState({ name: "", industry: "", website: "", mrr: "0", arr: "0", employees: "0", country: "", status: "active" as Account["status"], tier: "mid-market" as Account["tier"], health: "healthy" as Account["health"], contractValue: "0", margin: "0" })
 
-  setDetail = setDetailState
-  setDeleteTarget = setDeleteTargetState
-  openEdit = (account: Account) => {
+  function openEdit(account: Account) {
     setForm({ name: account.name, industry: account.industry, website: account.website, mrr: String(account.mrr), arr: String(account.arr), employees: String(account.employees), country: account.country, status: account.status, tier: account.tier, health: account.health, contractValue: String(account.contractValue), margin: String(account.margin) })
     setDialog({ open: true, mode: "edit", account })
   }
@@ -72,6 +52,20 @@ export function AccountsPage() {
       updateAccount.mutate({ id: dialog.account!.id, data }, { onSuccess: () => setDialog({ open: false }) })
     }
   }
+
+  const columns: ColumnDef<Account>[] = [
+    SelectColumn<Account>(),
+    { accessorKey: "name", header: "Account", cell: ({ row }) => (<div className="flex items-center gap-2.5"><div className="size-8 rounded-lg bg-muted text-foreground text-xs font-bold flex items-center justify-center shrink-0">{row.original.name.slice(0, 2).toUpperCase()}</div><div><p className="font-medium text-foreground">{row.original.name}</p><p className="text-[10px] text-muted-foreground">{row.original.website}</p></div></div>) },
+    { accessorKey: "industry", header: "Industry", cell: ({ row }) => <span className="text-muted-foreground">{row.original.industry}</span> },
+    { accessorKey: "tier", header: "Tier", cell: ({ row }) => <StatusBadge status={row.original.tier} /> },
+    { accessorKey: "health", header: "Health", cell: ({ row }) => <StatusBadge status={row.original.health} /> },
+    { accessorKey: "mrr", header: "MRR", cell: ({ row }) => <span className="font-semibold tabular-nums">${row.original.mrr.toLocaleString()}</span> },
+    { accessorKey: "arr", header: "ARR", cell: ({ row }) => <span className="tabular-nums">${row.original.arr.toLocaleString()}</span> },
+    { accessorKey: "margin", header: "Margin", cell: ({ row }) => (<div className="flex items-center gap-2"><div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden"><div className={`h-full rounded-full ${row.original.margin >= 70 ? "bg-emerald-500" : row.original.margin >= 55 ? "bg-amber-500" : "bg-destructive"}`} style={{ width: `${row.original.margin}%` }} /></div><span className={`text-xs font-medium ${row.original.margin < 55 ? "text-destructive" : ""}`}>{row.original.margin}%</span></div>) },
+    { accessorKey: "employees", header: "Employees", cell: ({ row }) => <span className="text-muted-foreground tabular-nums">{row.original.employees}</span> },
+    { accessorKey: "country", header: "Country", cell: ({ row }) => <span className="text-muted-foreground">{row.original.country}</span> },
+    { id: "actions", size: 40, cell: ({ row }) => (<div onClick={e => e.stopPropagation()}><DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="size-7"><MoreHorizontal className="size-3.5" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem onClick={() => setDetailState(row.original)}><Eye className="size-3.5 mr-2" />View Account</DropdownMenuItem><DropdownMenuItem onClick={() => openEdit(row.original)}><Pencil className="size-3.5 mr-2" />Edit</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onClick={() => setDeleteTargetState(row.original)}><Trash2 className="size-3.5 mr-2" />Archive</DropdownMenuItem></DropdownMenuContent></DropdownMenu></div>) },
+  ]
 
   if (isLoading) {
     return <div className="p-6 space-y-6 max-w-[1600px]"><PageHeader title="Accounts" description="Manage your customer accounts and track health" /><div className="grid grid-cols-2 md:grid-cols-4 gap-3">{[...Array(4)].map((_, i) => <div key={i} className="rounded-xl border border-border bg-card p-5 animate-pulse"><div className="h-4 w-24 bg-muted rounded mb-3" /><div className="h-8 w-20 bg-muted rounded" /></div>)}</div><div className="rounded-xl border border-border bg-card p-5 animate-pulse"><div className="h-8 w-36 bg-muted rounded mb-4" /><div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-12 bg-muted rounded" />)}</div></div></div>

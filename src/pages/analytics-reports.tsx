@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { motion } from "framer-motion"
 import {
   AreaChart, Area, BarChart, Bar, Line,
@@ -6,6 +7,9 @@ import {
 import { PageHeader } from "@/components/ui/page-header"
 import { MetricCard } from "@/components/ui/metric-card"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import type { ChartConfig } from "@/components/ui/chart"
 import { useDashboard } from "@/hooks/use-dashboard"
@@ -123,16 +127,84 @@ export function AnalyticsPage() {
 }
 
 export function ReportsPage() {
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [reportName, setReportName] = useState("")
+  const [reportType, setReportType] = useState("")
+  const [dateRange, setDateRange] = useState("")
+  const [queued, setQueued] = useState(false)
+
+  const handleGenerate = () => {
+    setDialogOpen(false)
+    setQueued(true)
+    setTimeout(() => setQueued(false), 4000)
+  }
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="p-6 space-y-6 max-w-[1600px]">
       <PageHeader
         title="Reports"
         description="Generate and manage business reports"
-        actions={<Button size="sm" className="h-8 text-xs">Generate Report</Button>}
+        actions={<Button size="sm" className="h-8 text-xs" onClick={() => setDialogOpen(true)}>Generate Report</Button>}
       />
       <div className="rounded-xl border border-border bg-card p-12 text-center">
-        <p className="text-sm text-muted-foreground">No reports yet. Generate your first report to get started.</p>
+        {queued ? (
+          <p className="text-sm text-emerald-500 font-medium">Report generation has been queued. You will receive a notification when ready.</p>
+        ) : (
+          <p className="text-sm text-muted-foreground">No reports yet. Generate your first report to get started.</p>
+        )}
       </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Generate Report</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium">Report Name</label>
+              <Input
+                placeholder="Monthly Pipeline Report"
+                className="h-8 text-xs"
+                value={reportName}
+                onChange={e => setReportName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium">Report Type</label>
+              <Select value={reportType} onValueChange={setReportType}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Select report type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pipeline" className="text-xs">Pipeline Summary</SelectItem>
+                  <SelectItem value="revenue" className="text-xs">Revenue Analysis</SelectItem>
+                  <SelectItem value="health" className="text-xs">Account Health</SelectItem>
+                  <SelectItem value="activity" className="text-xs">User Activity</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium">Date Range</label>
+              <Select value={dateRange} onValueChange={setDateRange}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Select date range" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7d" className="text-xs">Last 7 days</SelectItem>
+                  <SelectItem value="30d" className="text-xs">Last 30 days</SelectItem>
+                  <SelectItem value="quarter" className="text-xs">Last Quarter</SelectItem>
+                  <SelectItem value="year" className="text-xs">Last Year</SelectItem>
+                  <SelectItem value="custom" className="text-xs">Custom</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button size="sm" className="h-8 text-xs" onClick={handleGenerate}>Generate</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   )
 }

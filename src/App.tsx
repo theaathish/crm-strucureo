@@ -17,6 +17,8 @@ import { AnalyticsPage, ReportsPage } from "@/pages/analytics-reports"
 import { UsersPage } from "@/pages/users"
 import { NotificationsPage } from "@/pages/notifications"
 import { SettingsPage } from "@/pages/settings"
+import { McpLogsPage } from "@/pages/mcp-logs"
+import { UserLogsPage } from "@/pages/user-logs"
 import { LoginPage } from "@/pages/login"
 
 function PageRenderer() {
@@ -37,6 +39,8 @@ function PageRenderer() {
     users: <UsersPage />,
     notifications: <NotificationsPage />,
     settings: <SettingsPage />,
+    "mcp-logs": <McpLogsPage />,
+    "user-logs": <UserLogsPage />,
   }
 
   return (

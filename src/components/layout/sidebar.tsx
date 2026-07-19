@@ -18,6 +18,8 @@ import {
   Zap,
   LogOut,
   Bell,
+  ScrollText,
+  Cpu,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useApp } from "@/lib/store"
@@ -67,10 +69,17 @@ const navSections: { label: string; items: NavItem[] }[] = [
       { id: "settings", label: "Settings", icon: Settings },
     ],
   },
+  {
+    label: "System",
+    items: [
+      { id: "mcp-logs", label: "MCP Logs", icon: Cpu },
+      { id: "user-logs", label: "Activity Log", icon: ScrollText },
+    ],
+  },
 ]
 
 export function AppSidebar() {
-  const { currentPage, setCurrentPage, sidebarCollapsed, toggleSidebar, notifications } = useApp()
+  const { currentPage, setCurrentPage, sidebarCollapsed, toggleSidebar, notifications, currentUser } = useApp()
   const unreadCount = notifications.filter(n => !n.read).length
 
   return (
@@ -228,12 +237,12 @@ export function AppSidebar() {
         <div className="px-2 pb-3 border-t border-sidebar-border pt-3">
           <div className={cn("flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-sidebar-accent transition-colors cursor-pointer", sidebarCollapsed && "justify-center")}>
             <div className="size-6 rounded-full bg-foreground text-background flex items-center justify-center text-[10px] font-semibold shrink-0">
-              AR
+              {currentUser ? currentUser.name.split(" ").map(n => n[0]).join("") : "?"}
             </div>
             {!sidebarCollapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium truncate">Alex Rivera</p>
-                <p className="text-[10px] text-muted-foreground truncate">Owner</p>
+                <p className="text-xs font-medium truncate">{currentUser?.name ?? "User"}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{currentUser?.role ?? "Guest"}</p>
               </div>
             )}
             {!sidebarCollapsed && (

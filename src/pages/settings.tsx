@@ -42,6 +42,7 @@ export function SettingsPage() {
           <TabsTrigger value="notifications" className="text-xs">Notifications</TabsTrigger>
           <TabsTrigger value="security" className="text-xs">Security</TabsTrigger>
           <TabsTrigger value="integrations" className="text-xs">Integrations</TabsTrigger>
+          <TabsTrigger value="mcp" className="text-xs">MCP</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="mt-6">
@@ -136,6 +137,43 @@ export function SettingsPage() {
                   >
                     {integration.connected ? "Disconnect" : "Connect"}
                   </Button>
+                </SettingsRow>
+              ))}
+            </SettingsSection>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="mcp" className="mt-6">
+          <div className="rounded-xl border border-border bg-card p-6 space-y-6">
+            <SettingsSection title="MCP Server Configuration" description="Connect to your MCP server for tool execution">
+              <SettingsRow label="Server URL" description="The URL of your MCP server">
+                <Input defaultValue="http://localhost:3001" className="h-8 w-64 text-xs" />
+              </SettingsRow>
+              <SettingsRow label="API Key" description="Authentication key for the MCP server">
+                <Input type="password" defaultValue="sk-mcp-key" className="h-8 w-64 text-xs" />
+              </SettingsRow>
+              <SettingsRow label="Status">
+                <Button size="sm" className="h-8 text-xs">Connect</Button>
+              </SettingsRow>
+            </SettingsSection>
+
+            <Separator />
+
+            <SettingsSection title="MCP Tools" description="Available tools provided by the MCP server">
+              {[
+                { name: "search_records", description: "Search records across all modules", active: true },
+                { name: "create_record", description: "Create new records in any module", active: true },
+                { name: "update_record", description: "Update existing records", active: true },
+                { name: "delete_record", description: "Delete records from the system", active: true },
+                { name: "query_database", description: "Execute read-only database queries", active: false },
+              ].map(tool => (
+                <SettingsRow key={tool.name} label={tool.name} description={tool.description}>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-medium ${tool.active ? "text-emerald-500" : "text-muted-foreground"}`}>
+                      {tool.active ? "Active" : "Inactive"}
+                    </span>
+                    <Switch defaultChecked={tool.active} />
+                  </div>
                 </SettingsRow>
               ))}
             </SettingsSection>

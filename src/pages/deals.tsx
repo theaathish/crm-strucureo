@@ -95,14 +95,16 @@ export function DealsPage() {
                           <p className="text-xs font-medium text-foreground leading-snug truncate">{deal.title}</p>
                           <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{deal.accountName}</p>
                         </div>
+                        <div onClick={e => e.stopPropagation()}>
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="size-5 opacity-0 group-hover:opacity-100 shrink-0" onClick={e => e.stopPropagation()}><MoreHorizontal className="size-3" /></Button></DropdownMenuTrigger>
+                          <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="size-5 opacity-0 group-hover:opacity-100 shrink-0"><MoreHorizontal className="size-3" /></Button></DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEdit(deal) }}><Pencil className="size-3 mr-2" />Edit Deal</DropdownMenuItem>
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setDetail(deal) }}><Eye className="size-3 mr-2" />View Details</DropdownMenuItem>
-                            <DropdownMenuItem variant="destructive" onClick={(e) => { e.stopPropagation(); setDeleteTarget(deal) }}><Trash2 className="size-3 mr-2" />Delete</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openEdit(deal)}><Pencil className="size-3 mr-2" />Edit Deal</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setDetail(deal)}><Eye className="size-3 mr-2" />View Details</DropdownMenuItem>
+                            <DropdownMenuItem variant="destructive" onClick={() => setDeleteTarget(deal)}><Trash2 className="size-3 mr-2" />Delete</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
+                        </div>
                       </div>
                       <div className="mt-2.5 flex items-center justify-between">
                         <span className="text-sm font-semibold">${(deal.value / 1000).toFixed(0)}K</span>

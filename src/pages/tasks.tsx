@@ -127,8 +127,9 @@ export function TasksPage() {
     {
       id: "actions", size: 40,
       cell: ({ row }) => (
+        <div onClick={e => e.stopPropagation()}>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="size-7" onClick={e => e.stopPropagation()}><MoreHorizontal className="size-3.5" /></Button></DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="size-7"><MoreHorizontal className="size-3.5" /></Button></DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => setDetail(row.original)}><Eye className="size-3.5 mr-2" />View Details</DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleMarkDone(row.original)}><CheckCircle2 className="size-3.5 mr-2" />{row.original.status === "done" ? "Reopen" : "Mark Done"}</DropdownMenuItem>
@@ -136,6 +137,7 @@ export function TasksPage() {
             <DropdownMenuItem variant="destructive" onClick={() => setDeleteTarget(row.original)}><Trash2 className="size-3.5 mr-2" />Delete</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       ),
     },
   ]
