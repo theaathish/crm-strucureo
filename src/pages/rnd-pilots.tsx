@@ -60,7 +60,7 @@ export function PilotsPage() {
   const deletePilot = useDeletePilot()
   const [detail, setDetail] = React.useState<Pilot | null>(null)
   const [deleteTarget, setDeleteTarget] = React.useState<Pilot | null>(null)
-  const [dialog, setDialog] = React.useState<{ open: false } | { open: true; mode: "create" } | { open: true; mode: "edit"; pilot: Pilot }>({ open: false })
+  const [dialog, setDialog] = React.useState<{ open: boolean; mode?: "create" | "edit"; pilot?: Pilot }>({ open: false })
   const [form, setForm] = React.useState({ name: "", accountId: "", accountName: "", status: "active" as Pilot["status"], value: "0", startDate: "", endDate: "", outcomes: "" })
 
   function resetForm() { setForm({ name: "", accountId: "", accountName: "", status: "active", value: "0", startDate: "", endDate: "", outcomes: "" }) }
@@ -70,11 +70,12 @@ export function PilotsPage() {
   }
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!dialog.open) return
     const data = { ...form, value: Number(form.value) }
     if (dialog.mode === "create") {
       createPilot.mutate(data, { onSuccess: () => setDialog({ open: false }) })
     } else {
-      updatePilot.mutate({ id: dialog.pilot.id, data }, { onSuccess: () => setDialog({ open: false }) })
+      updatePilot.mutate({ id: dialog.pilot!.id, data }, { onSuccess: () => setDialog({ open: false }) })
     }
   }
 
@@ -148,7 +149,7 @@ export function PilotsPage() {
               <div><span className="text-muted-foreground">End</span><p className="font-medium">{detail.endDate}</p></div>
               <div><span className="text-muted-foreground">Outcomes</span><p className="font-medium">{detail.outcomes}</p></div>
             </div>
-            <div className="pt-2 border-t"><span className="text-muted-foreground">Created</span><p className="font-medium">{new Date(detail.createdAt).toLocaleDateString()}</p></div>
+            
           </div>)}
           <DialogFooter><Button variant="outline" onClick={() => setDetail(null)}>Close</Button></DialogFooter>
         </DialogContent>

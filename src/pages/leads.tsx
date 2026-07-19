@@ -31,12 +31,12 @@ function ScoreBar({ score }: { score: number }) {
 }
 
 export function LeadsPage() {
-  const { data: leads = [], isLoading, error } = useLeads()
+  const { data: leads = [], isLoading } = useLeads()
   const createLead = useCreateLead()
   const updateLead = useUpdateLead()
   const deleteLead = useDeleteLead()
   const [statusFilter, setStatusFilter] = React.useState("all")
-  const [dialog, setDialog] = React.useState<{ open: false } | { open: true; mode: "create" } | { open: true; mode: "edit"; lead: Lead }>({ open: false })
+  const [dialog, setDialog] = React.useState<{ open: boolean; mode?: "create" | "edit"; lead?: Lead }>({ open: false })
   const [detail, setDetail] = React.useState<Lead | null>(null)
   const [deleteTarget, setDeleteTarget] = React.useState<Lead | null>(null)
   const [form, setForm] = React.useState({ name: "", company: "", email: "", phone: "", status: "new" as Lead["status"], source: "", score: "50", value: "0", notes: "", tags: "", assignedTo: "" })
@@ -57,11 +57,12 @@ export function LeadsPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!dialog.open) return
     const data = { ...form, score: Number(form.score), value: Number(form.value), tags: form.tags.split(",").map(t => t.trim()).filter(Boolean) }
     if (dialog.mode === "create") {
       createLead.mutate(data, { onSuccess: () => setDialog({ open: false }) })
     } else {
-      updateLead.mutate({ id: dialog.lead.id, data }, { onSuccess: () => setDialog({ open: false }) })
+      updateLead.mutate({ id: dialog.lead!.id, data }, { onSuccess: () => setDialog({ open: false }) })
     }
   }
 

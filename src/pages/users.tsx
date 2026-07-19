@@ -34,7 +34,7 @@ export function UsersPage() {
   const deleteUser = useDeleteUser()
   const [detail, setDetail] = React.useState<User | null>(null)
   const [deleteTarget, setDeleteTarget] = React.useState<User | null>(null)
-  const [dialog, setDialog] = React.useState<{ open: false } | { open: true; mode: "create" } | { open: true; mode: "edit"; user: User }>({ open: false })
+  const [dialog, setDialog] = React.useState<{ open: boolean; mode?: "create" | "edit"; user?: User }>({ open: false })
   const [form, setForm] = React.useState({ name: "", email: "", password: "", role: "growth" as UserRole, department: "" })
 
   function resetForm() { setForm({ name: "", email: "", password: "", role: "growth" as UserRole, department: "" }) }
@@ -44,12 +44,13 @@ export function UsersPage() {
   }
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!dialog.open) return
     if (dialog.mode === "create") {
       if (!form.password) return
       createUser.mutate(form, { onSuccess: () => { setDialog({ open: false }); resetForm() } })
     } else {
       const data = form.password ? form : { name: form.name, email: form.email, role: form.role, department: form.department }
-      updateUser.mutate({ id: dialog.user.id, data }, { onSuccess: () => { setDialog({ open: false }); resetForm() } })
+      updateUser.mutate({ id: dialog.user!.id, data }, { onSuccess: () => { setDialog({ open: false }); resetForm() } })
     }
   }
 

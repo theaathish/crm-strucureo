@@ -36,13 +36,13 @@ let openEdit: (a: Account) => void
 
 export function AccountsPage() {
   const [healthFilter, setHealthFilter] = React.useState("all")
-  const { data: accounts = [], isLoading, error } = useAccounts()
+  const { data: accounts = [], isLoading } = useAccounts()
   const createAccount = useCreateAccount()
   const updateAccount = useUpdateAccount()
   const deleteAccount = useDeleteAccount()
   const [detail, setDetailState] = React.useState<Account | null>(null)
   const [deleteTarget, setDeleteTargetState] = React.useState<Account | null>(null)
-  const [dialog, setDialog] = React.useState<{ open: false } | { open: true; mode: "create" } | { open: true; mode: "edit"; account: Account }>({ open: false })
+  const [dialog, setDialog] = React.useState<{ open: boolean; mode?: "create" | "edit"; account?: Account }>({ open: false })
   const [form, setForm] = React.useState({ name: "", industry: "", website: "", mrr: "0", arr: "0", employees: "0", country: "", status: "active" as Account["status"], tier: "mid-market" as Account["tier"], health: "healthy" as Account["health"], contractValue: "0", margin: "0" })
 
   setDetail = setDetailState
@@ -64,11 +64,12 @@ export function AccountsPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!dialog.open) return
     const data = { ...form, mrr: Number(form.mrr), arr: Number(form.arr), employees: Number(form.employees), contractValue: Number(form.contractValue), margin: Number(form.margin) }
     if (dialog.mode === "create") {
       createAccount.mutate(data, { onSuccess: () => setDialog({ open: false }) })
     } else {
-      updateAccount.mutate({ id: dialog.account.id, data }, { onSuccess: () => setDialog({ open: false }) })
+      updateAccount.mutate({ id: dialog.account!.id, data }, { onSuccess: () => setDialog({ open: false }) })
     }
   }
 

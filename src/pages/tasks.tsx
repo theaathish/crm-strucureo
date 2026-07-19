@@ -21,12 +21,12 @@ const statuses: Task["status"][] = ["todo", "in_progress", "done", "cancelled"]
 const priorities: Task["priority"][] = ["low", "medium", "high", "urgent"]
 
 export function TasksPage() {
-  const { data: tasks = [], isLoading, error } = useTasks()
+  const { data: tasks = [], isLoading } = useTasks()
   const createTask = useCreateTask()
   const updateTask = useUpdateTask()
   const deleteTask = useDeleteTask()
   const [statusFilter, setStatusFilter] = React.useState("all")
-  const [dialog, setDialog] = React.useState<{ open: false } | { open: true; mode: "create" } | { open: true; mode: "edit"; task: Task }>({ open: false })
+  const [dialog, setDialog] = React.useState<{ open: boolean; mode?: "create" | "edit"; task?: Task }>({ open: false })
   const [detail, setDetail] = React.useState<Task | null>(null)
   const [deleteTarget, setDeleteTarget] = React.useState<Task | null>(null)
   const [form, setForm] = React.useState({ title: "", description: "", status: "todo" as Task["status"], priority: "medium" as Task["priority"], dueDate: "", tags: "" })
@@ -53,11 +53,12 @@ export function TasksPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!dialog.open) return
     const data = { ...form, tags: form.tags.split(",").map(t => t.trim()).filter(Boolean), assignedTo: tasks[0]?.assignedTo || "" }
     if (dialog.mode === "create") {
       createTask.mutate(data, { onSuccess: () => setDialog({ open: false }) })
     } else {
-      updateTask.mutate({ id: dialog.task.id, data }, { onSuccess: () => setDialog({ open: false }) })
+      updateTask.mutate({ id: dialog.task!.id, data }, { onSuccess: () => setDialog({ open: false }) })
     }
   }
 

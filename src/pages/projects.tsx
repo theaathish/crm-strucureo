@@ -37,7 +37,7 @@ export function ProjectsPage() {
   const deleteProject = useDeleteProject()
   const [detail, setDetail] = React.useState<Project | null>(null)
   const [deleteTarget, setDeleteTarget] = React.useState<Project | null>(null)
-  const [dialog, setDialog] = React.useState<{ open: false } | { open: true; mode: "create" } | { open: true; mode: "edit"; project: Project }>({ open: false })
+  const [dialog, setDialog] = React.useState<{ open: boolean; mode?: "create" | "edit"; project?: Project }>({ open: false })
   const [form, setForm] = React.useState({ name: "", accountId: "", accountName: "", status: "active" as Project["status"], progress: 0, budget: "0", spent: "0", endDate: "", assignedTo: [] as string[], description: "" })
 
   function resetForm() { setForm({ name: "", accountId: "", accountName: "", status: "active", progress: 0, budget: "0", spent: "0", endDate: "", assignedTo: [], description: "" }) }
@@ -47,11 +47,12 @@ export function ProjectsPage() {
   }
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!dialog.open) return
     const data = { ...form, budget: Number(form.budget), spent: Number(form.spent), progress: Number(form.progress) }
     if (dialog.mode === "create") {
       createProject.mutate(data, { onSuccess: () => setDialog({ open: false }) })
     } else {
-      updateProject.mutate({ id: dialog.project.id, data }, { onSuccess: () => setDialog({ open: false }) })
+      updateProject.mutate({ id: dialog.project!.id, data }, { onSuccess: () => setDialog({ open: false }) })
     }
   }
 
@@ -135,7 +136,6 @@ export function ProjectsPage() {
               <div><span className="text-muted-foreground">Team</span><p className="font-medium">{detail.assignedTo.join(", ") || "—"}</p></div>
             </div>
             {detail.description && <div className="pt-2 border-t"><span className="text-muted-foreground">Description</span><p className="mt-1">{detail.description}</p></div>}
-            <div className="pt-2 border-t"><span className="text-muted-foreground">Created</span><p className="font-medium">{new Date(detail.createdAt).toLocaleDateString()}</p></div>
           </div>)}
           <DialogFooter><Button variant="outline" onClick={() => setDetail(null)}>Close</Button></DialogFooter>
         </DialogContent>

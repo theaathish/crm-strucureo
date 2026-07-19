@@ -30,7 +30,7 @@ export function DealsPage() {
   const deleteDeal = useDeleteDeal()
   const [detail, setDetail] = React.useState<Deal | null>(null)
   const [deleteTarget, setDeleteTarget] = React.useState<Deal | null>(null)
-  const [dialog, setDialog] = React.useState<{ open: false } | { open: true; mode: "create" } | { open: true; mode: "edit"; deal: Deal }>({ open: false })
+  const [dialog, setDialog] = React.useState<{ open: boolean; mode?: "create" | "edit"; deal?: Deal }>({ open: false })
   const [form, setForm] = React.useState({ title: "", accountId: "", accountName: "", stage: "discovery" as Deal["stage"], value: "0", probability: "50", closeDate: "", assignedTo: "", description: "" })
 
   function resetForm() { setForm({ title: "", accountId: "", accountName: "", stage: "discovery", value: "0", probability: "50", closeDate: "", assignedTo: "", description: "" }) }
@@ -40,11 +40,12 @@ export function DealsPage() {
   }
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!dialog.open) return
     const data = { ...form, value: Number(form.value), probability: Number(form.probability) }
     if (dialog.mode === "create") {
       createDeal.mutate(data, { onSuccess: () => setDialog({ open: false }) })
     } else {
-      updateDeal.mutate({ id: dialog.deal.id, data }, { onSuccess: () => setDialog({ open: false }) })
+      updateDeal.mutate({ id: dialog.deal!.id, data }, { onSuccess: () => setDialog({ open: false }) })
     }
   }
 
@@ -112,7 +113,7 @@ export function DealsPage() {
                       </div>
                       <div className="mt-1.5 flex items-center gap-2">
                         <span className="text-[10px] text-muted-foreground">Close: {deal.closeDate}</span>
-                        <div className="size-4 rounded-full bg-muted text-foreground text-[8px] font-bold flex items-center justify-center ml-auto">{deal.assignedTo.split(" ").map(n => n[0]).join("")}</div>
+                        <div className="size-4 rounded-full bg-muted text-foreground text-[8px] font-bold flex items-center justify-center ml-auto">{deal.assignedTo.split(" ").map((n: string) => n[0]).join("")}</div>
                       </div>
                     </motion.div>
                   ))}

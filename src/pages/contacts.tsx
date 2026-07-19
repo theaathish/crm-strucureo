@@ -22,7 +22,7 @@ export function ContactsPage() {
   const deleteContact = useDeleteContact()
   const [detail, setDetail] = React.useState<Contact | null>(null)
   const [deleteTarget, setDeleteTarget] = React.useState<Contact | null>(null)
-  const [dialog, setDialog] = React.useState<{ open: false } | { open: true; mode: "create" } | { open: true; mode: "edit"; contact: Contact }>({ open: false })
+  const [dialog, setDialog] = React.useState<{ open: boolean; mode?: "create" | "edit"; contact?: Contact }>({ open: false })
   const [form, setForm] = React.useState({ name: "", email: "", phone: "", title: "", accountId: "", accountName: "", type: "primary" as Contact["type"] })
 
   function resetForm() { setForm({ name: "", email: "", phone: "", title: "", accountId: "", accountName: "", type: "primary" }) }
@@ -32,10 +32,11 @@ export function ContactsPage() {
   }
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!dialog.open) return
     if (dialog.mode === "create") {
       createContact.mutate(form, { onSuccess: () => setDialog({ open: false }) })
     } else {
-      updateContact.mutate({ id: dialog.contact.id, data: form }, { onSuccess: () => setDialog({ open: false }) })
+      updateContact.mutate({ id: dialog.contact!.id, data: form }, { onSuccess: () => setDialog({ open: false }) })
     }
   }
 
