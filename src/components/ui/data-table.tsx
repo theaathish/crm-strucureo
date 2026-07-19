@@ -28,6 +28,7 @@ interface DataTableProps<TData, TValue> {
   toolbar?: React.ReactNode
   pageSize?: number
   className?: string
+  onRowClick?: (row: TData) => void
 }
 
 export function DataTable<TData, TValue>({
@@ -38,6 +39,7 @@ export function DataTable<TData, TValue>({
   toolbar,
   pageSize = 20,
   className,
+  onRowClick,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -145,6 +147,8 @@ export function DataTable<TData, TValue>({
                       "border-b border-border transition-colors hover:bg-muted/30",
                       row.getIsSelected() && "bg-muted/50"
                     )}
+                    onClick={() => onRowClick?.(row.original)}
+                    style={onRowClick ? { cursor: "pointer" } : undefined}
                   >
                     {row.getVisibleCells().map(cell => (
                       <TableCell key={cell.id} className="py-2.5 text-xs">

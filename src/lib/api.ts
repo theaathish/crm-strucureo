@@ -74,6 +74,7 @@ export const api = {
   getUsers: () => request<any[]>('/users'),
   createUser: (data: any) => request<any>('/users', { method: 'POST', body: JSON.stringify(data) }),
   updateUser: (id: string, data: any) => request<any>(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  deleteUser: (id: string) => request<void>(`/users/${id}`, { method: 'DELETE' }),
 
   // Activities
   getActivities: (entityType?: string, entityId?: string) => {
