@@ -1,0 +1,186 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id         String    @id @default(cuid())
+  name       String
+  email      String    @unique
+  role       String
+  avatar     String?
+  department String
+  joinedAt   DateTime  @default(now())
+  lastActive DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  assignedLeads Lead[]
+  assignedDeals Deal[]
+}
+
+model Lead {
+  id          String   @id @default(cuid())
+  name        String
+  company     String
+  email       String
+  phone       String
+  status      String   @default("new")
+  source      String
+  score       Int      @default(0)
+  value       Float    @default(0)
+  notes       String   @default("")
+  tags        String[]
+  lastContact DateTime @default(now())
+  assignedTo  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assignedUser User? @relation(fields: [assignedTo], references: [id])
+}
+
+model Account {
+  id            String   @id @default(cuid())
+  name          String
+  industry      String
+  website       String   @default("")
+  mrr           Float    @default(0)
+  arr           Float    @default(0)
+  employees     Int      @default(0)
+  country       String   @default("")
+  status        String   @default("active")
+  tier          String   @default("smb")
+  health        String   @default("healthy")
+  contractValue Float    @default(0)
+  margin        Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  contacts Contact[]
+  deals    Deal[]
+  projects Project[]
+  pilots   Pilot[]
+}
+
+model Contact {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  phone       String
+  title       String
+  type        String   @default("primary")
+  accountId   String
+  accountName String   @default("")
+  avatar      String?
+  lastContact DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  account Account @relation(fields: [accountId], references: [id])
+  deals   Deal[]
+  pilots  Pilot[]
+}
+
+model Deal {
+  id                String    @id @default(cuid())
+  title             String
+  value             Float
+  stage             String    @default("discovery")
+  probability       Int       @default(0)
+  description       String    @default("")
+  accountId         String
+  accountName       String    @default("")
+  contactId         String?
+  assignedTo        String?
+  expectedCloseDate DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  account      Account  @relation(fields: [accountId], references: [id])
+  contact      Contact? @relation(fields: [contactId], references: [id])
+  assignedUser User?    @relation(fields: [assignedTo], references: [id])
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  name        String
+  description String    @default("")
+  status      String    @default("planning")
+  budget      Float     @default(0)
+  spent       Float     @default(0)
+  margin      Int       @default(0)
+  progress    Int       @default(0)
+  startDate   DateTime  @default(now())
+  endDate     DateTime?
+  accountId   String
+  accountName String    @default("")
+  assignedTo  String[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  account Account @relation(fields: [accountId], references: [id])
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  title       String
+  description String    @default("")
+  status      String    @default("todo")
+  priority    String    @default("medium")
+  assignedTo  String?
+  dueDate     DateTime?
+  tags        String[]
+  relatedType String?
+  relatedId   String?
+  relatedName String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  type        String
+  description String
+  entityType  String
+  entityId    String
+  entityName  String   @default("")
+  userId      String
+  userName    String
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id         String   @id @default(cuid())
+  title      String
+  message    String
+  type       String   @default("info")
+  read       Boolean  @default(false)
+  link       String?
+  userId     String
+  entityType String?
+  entityId   String?
+  createdAt  DateTime @default(now())
+}
+
+model Pilot {
+  id          String    @id @default(cuid())
+  name        String
+  description String    @default("")
+  status      String    @default("proposed")
+  value       Float     @default(0)
+  outcomes    String    @default("")
+  accountId   String
+  accountName String    @default("")
+  contactId   String?
+  startDate   DateTime  @default(now())
+  endDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  account Account  @relation(fields: [accountId], references: [id])
+  contact Contact? @relation(fields: [contactId], references: [id])
+}
