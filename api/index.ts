@@ -28,10 +28,6 @@ const models: Record<string, { model: PrismaModel; includes?: Record<string, boo
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (cors(req, res)) return
 
-  if (req.url?.includes('debug')) {
-    return res.status(200).json({ url: req.url, method: req.method, headers: Object.fromEntries(Object.entries(req.headers).filter(([k]) => !k.includes('auth') && !k.includes('cookie') && !k.includes('x-forwarded'))) })
-  }
-
   const url = new URL(req.url || '', 'https://example.com')
   const pathParts = url.pathname.replace(/^\/api\//, '').split('/').filter(Boolean)
   const entity = pathParts[0]
