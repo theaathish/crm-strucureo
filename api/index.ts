@@ -75,6 +75,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const atRiskAccounts = accounts.filter((a: any) => a.health === 'at_risk' || a.health === 'churning')
       const avgMargin = accounts.length > 0 ? accounts.reduce((s: number, a: any) => s + a.margin, 0) / accounts.length : 0
       const qualifiedLeads = leads.filter((l: any) => l.status === 'qualified').length
+      const healthyAccounts = accounts.filter((a: any) => a.health === 'healthy' || a.health === 'growing')
+      const retentionRate = accounts.length > 0 ? Math.round((healthyAccounts.length / accounts.length) * 10000) / 100 : 0
+      const totalChurned = accounts.filter((a: any) => a.health === 'churning').reduce((s: number, a: any) => s + a.mrr, 0)
+      const nrr = totalMRR > 0 ? Math.round(((totalMRR - totalChurned) / totalMRR) * 100) : 0
 
       // Compute chart data from real records
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -133,7 +137,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         recentActivities: activities,
         todayTasks: tasks.filter((t: any) => t.status !== 'done' && t.status !== 'cancelled').slice(0, 5),
         activeProjects: projects.filter((p: any) => p.status === 'active'),
-        openDeals,
+        openDeals, nrr, retentionRate,
         revenueData: revenueChartData,
         mrrData: mrrChartData,
         pipelineData: pipelineChartData,

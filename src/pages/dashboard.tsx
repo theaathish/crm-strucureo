@@ -77,6 +77,7 @@ export function DashboardPage() {
     totalMRR, totalARR, pipelineValue, atRiskAccounts, avgMargin,
     qualifiedLeads, topAccounts, recentActivities, todayTasks,
     activeProjects, openDeals, revenueData, mrrData, pipelineData,
+    nrr, retentionRate,
   } = data!
 
   return (
@@ -363,22 +364,22 @@ export function DashboardPage() {
         <div className="space-y-4">
           <div className="rounded-xl border border-border bg-card p-5">
             <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-3">NRR</p>
-            <p className="text-2xl font-semibold">112%</p>
+            <p className="text-2xl font-semibold">{nrr}%</p>
             <p className="text-xs text-emerald-600 flex items-center gap-1 mt-1.5">
-              <TrendingUp className="size-3" /> +3% vs last quarter
+              <TrendingUp className="size-3" /> Net revenue retention
             </p>
-          </div>
-          <div className="rounded-xl border border-border bg-card p-5">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-3">IP / Patents</p>
-            <p className="text-2xl font-semibold">14</p>
-            <p className="text-xs text-muted-foreground mt-1.5">3 pending approval</p>
           </div>
           <div className="rounded-xl border border-border bg-card p-5">
             <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-3">Retention Rate</p>
-            <p className="text-2xl font-semibold">94.2%</p>
+            <p className="text-2xl font-semibold">{retentionRate}%</p>
             <p className="text-xs text-emerald-600 flex items-center gap-1 mt-1.5">
-              <TrendingUp className="size-3" /> Above target
+              <TrendingUp className="size-3" /> Healthy accounts
             </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-3">Active Projects</p>
+            <p className="text-2xl font-semibold">{activeProjects.length}</p>
+            <p className="text-xs text-muted-foreground mt-1.5">{openDeals.length} open deals</p>
           </div>
         </div>
       </motion.div>
