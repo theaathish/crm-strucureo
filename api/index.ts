@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { prisma } from './_lib/prisma.js'
 import { cors } from './_lib/cors.js'
-import { hashPassword, verifyPassword, verifyApiKey } from './_lib/auth.js'
+import { hashPassword, verifyPassword } from './_lib/auth.js'
 
 type PrismaModel = {
   findMany: (args?: any) => Promise<any[]>
@@ -51,11 +51,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       const { password: _, ...userWithoutPassword } = user
       return res.status(200).json(userWithoutPassword)
-    }
-
-    // API key check — skip for auth/login
-    if (entity !== 'auth' && !verifyApiKey(req)) {
-      return res.status(401).json({ error: 'Unauthorized' })
     }
 
     // Handle dashboard

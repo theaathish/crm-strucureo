@@ -7,11 +7,17 @@ export interface ApiResponse<T> {
 
 async function request<T>(path: string, options?: RequestInit): Promise<ApiResponse<T>> {
   try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    const apiKey = typeof localStorage !== 'undefined' ? localStorage.getItem('mcp_api_key') : null
+    if (apiKey) headers['x-api-key'] = apiKey
+
     const res = await fetch(`${API_BASE}${path}`, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
+        ...headers,
+        ...options?.headers as Record<string, string> | undefined,
       },
     })
 
