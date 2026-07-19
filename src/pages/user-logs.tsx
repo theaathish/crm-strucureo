@@ -43,7 +43,7 @@ export function UserLogsPage() {
       if (typeFilter !== "all" && a.type !== typeFilter) return false
       if (search) {
         const q = search.toLowerCase()
-        if (!a.description.toLowerCase().includes(q) && !a.relatedTo.name.toLowerCase().includes(q)) return false
+        if (!a.description.toLowerCase().includes(q) && !a.relatedTo?.name?.toLowerCase().includes(q)) return false
       }
       if (dateFrom && new Date(a.createdAt) < new Date(dateFrom)) return false
       if (dateTo) {
@@ -137,7 +137,7 @@ export function UserLogsPage() {
                     <Badge variant={TYPE_COLORS[activity.type] ?? "outline"} className="capitalize text-[10px] px-1.5 py-0">
                       {activity.type}
                     </Badge>
-                    <span className="text-xs text-muted-foreground">{activity.relatedTo.name}</span>
+                    <span className="text-xs text-muted-foreground">{activity.relatedTo?.name ?? activity.type}</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">{activity.description}</p>
                   <p className="text-[10px] text-muted-foreground mt-1">

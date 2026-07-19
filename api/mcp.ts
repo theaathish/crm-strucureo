@@ -1,12 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { prisma } from './_lib/prisma.js'
 import { cors } from './_lib/cors.js'
+import { verifyApiKey } from './_lib/auth.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (cors(req, res)) return
 
-  const apiKey = req.headers['x-api-key']
-  if (apiKey !== process.env.MCP_API_KEY) {
+  if (!verifyApiKey(req)) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
