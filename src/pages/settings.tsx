@@ -1,6 +1,6 @@
 import * as React from "react"
 import { motion } from "framer-motion"
-import { Eye, EyeOff, Copy, Check, ExternalLink, Terminal } from "lucide-react"
+import { Eye, EyeOff, Copy, Check, Terminal } from "lucide-react"
 import { PageHeader } from "@/components/ui/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
