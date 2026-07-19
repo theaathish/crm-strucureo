@@ -17,6 +17,7 @@ import { AnalyticsPage, ReportsPage } from "@/pages/analytics-reports"
 import { UsersPage } from "@/pages/users"
 import { NotificationsPage } from "@/pages/notifications"
 import { SettingsPage } from "@/pages/settings"
+import { LoginPage } from "@/pages/login"
 
 function PageRenderer() {
   const { currentPage } = useApp()
@@ -55,6 +56,9 @@ function PageRenderer() {
 }
 
 function AppLayout() {
+  const { currentUser } = useApp()
+  if (!currentUser) return <LoginPage />
+
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <AppSidebar />

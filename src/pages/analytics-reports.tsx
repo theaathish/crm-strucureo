@@ -8,7 +8,7 @@ import { MetricCard } from "@/components/ui/metric-card"
 import { Button } from "@/components/ui/button"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import type { ChartConfig } from "@/components/ui/chart"
-import { REVENUE_DATA, MRR_DATA } from "@/lib/data"
+import { useDashboard } from "@/hooks/use-dashboard"
 
 const revenueConfig = {
   revenue: { label: "Revenue", color: "var(--chart-1)" },
@@ -38,6 +38,11 @@ const healthData = [
 ]
 
 export function AnalyticsPage() {
+  const { data } = useDashboard()
+  const revenueData = data?.revenueData ?? []
+  const mrrData = data?.mrrData ?? []
+  const totalRevenue = revenueData.reduce((s: number, r: any) => s + r.revenue, 0) || 0
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="p-6 space-y-6 max-w-[1600px]">
       <PageHeader title="Analytics" description="Deep-dive into business performance metrics" actions={
@@ -45,7 +50,7 @@ export function AnalyticsPage() {
       } />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <MetricCard title="Total Revenue" value={2118000} prefix="$" change={18.2} trend="up" />
+        <MetricCard title="Total Revenue" value={totalRevenue} prefix="$" change={18.2} trend="up" />
         <MetricCard title="NRR" value="112%" change={3.1} trend="up" />
         <MetricCard title="LTV/CAC Ratio" value="4.2x" change={0.3} trend="up" />
         <MetricCard title="Avg. Contract Length" value="14mo" change={1.5} trend="up" />
@@ -56,7 +61,7 @@ export function AnalyticsPage() {
           <h3 className="text-sm font-semibold mb-1">Revenue vs Target</h3>
           <p className="text-xs text-muted-foreground mb-4">Monthly revenue performance</p>
           <ChartContainer config={revenueConfig} className="h-[220px] w-full">
-            <AreaChart data={REVENUE_DATA} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+            <AreaChart data={revenueData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="var(--color-revenue)" stopOpacity={0.15} />
@@ -77,7 +82,7 @@ export function AnalyticsPage() {
           <h3 className="text-sm font-semibold mb-1">MRR Growth</h3>
           <p className="text-xs text-muted-foreground mb-4">Monthly recurring revenue trend</p>
           <ChartContainer config={mrrConfig} className="h-[220px] w-full">
-            <BarChart data={MRR_DATA} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+            <BarChart data={mrrData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
               <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={v => `$${(v/1000).toFixed(0)}K`} />

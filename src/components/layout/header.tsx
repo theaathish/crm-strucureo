@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Search, Bell, Plus, Command, ChevronRight } from "lucide-react"
+import { Search, Bell, Plus, Command, ChevronRight, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useApp } from "@/lib/store"
 import { cn } from "@/lib/utils"
@@ -26,7 +26,7 @@ interface HeaderProps {
 }
 
 export function AppHeader({ actions }: HeaderProps) {
-  const { currentPage, setCurrentPage, setCommandOpen, notifications } = useApp()
+  const { currentPage, setCurrentPage, setCommandOpen, notifications, currentUser, setCurrentUser } = useApp()
   const unreadCount = notifications.filter(n => !n.read).length
   const pageLabel = PAGE_LABELS[currentPage] ?? currentPage
 
@@ -81,6 +81,22 @@ export function AppHeader({ actions }: HeaderProps) {
             <span className="absolute top-1 right-1 size-2 rounded-full bg-destructive" />
           )}
         </button>
+
+        {/* User + Logout */}
+        {currentUser && (
+          <div className="flex items-center gap-2">
+            <div className="size-8 rounded-full bg-muted flex items-center justify-center text-xs font-semibold text-foreground shrink-0">
+              {currentUser.name.split(" ").map(n => n[0]).join("")}
+            </div>
+            <button
+              onClick={() => setCurrentUser(null)}
+              className="size-8 flex items-center justify-center rounded-md border border-border hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+              title="Sign out"
+            >
+              <LogOut className="size-4" />
+            </button>
+          </div>
+        )}
 
         {/* Command palette */}
         <button

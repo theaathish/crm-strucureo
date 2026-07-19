@@ -1,5 +1,5 @@
 import * as React from "react"
-import type { Notification } from "./types"
+import type { Notification, User } from "./types"
 
 interface AppState {
   currentPage: string
@@ -12,9 +12,20 @@ interface AppState {
   setNotifications: (notifications: Notification[]) => void
   sidebarCollapsed: boolean
   toggleSidebar: () => void
+  currentUser: User | null
+  setCurrentUser: (user: User | null) => void
 }
 
 const AppContext = React.createContext<AppState | null>(null)
+
+function getStoredUser(): User | null {
+  try {
+    const raw = localStorage.getItem("crm_user")
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [currentPage, setCurrentPage] = React.useState("dashboard")
@@ -22,6 +33,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [searchQuery, setSearchQuery] = React.useState("")
   const [notifications, setNotifications] = React.useState<Notification[]>([])
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false)
+  const [currentUser, setCurrentUser] = React.useState<User | null>(getStoredUser)
 
   const value: AppState = React.useMemo(() => ({
     currentPage,
@@ -34,7 +46,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setNotifications,
     sidebarCollapsed,
     toggleSidebar: () => setSidebarCollapsed(prev => !prev),
-  }), [currentPage, commandOpen, searchQuery, notifications, sidebarCollapsed])
+    currentUser,
+    setCurrentUser: (user: User | null) => {
+      setCurrentUser(user)
+      if (user) {
+        localStorage.setItem("crm_user", JSON.stringify(user))
+      } else {
+        localStorage.removeItem("crm_user")
+      }
+    },
+  }), [currentPage, commandOpen, searchQuery, notifications, sidebarCollapsed, currentUser])
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
 }

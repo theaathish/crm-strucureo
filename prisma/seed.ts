@@ -2,7 +2,7 @@ import 'dotenv/config'
 import { PrismaClient } from '../generated/prisma'
 
 const prisma = new PrismaClient({
-  accelerateUrl: process.env['DATABASE_URL'],
+  datasourceUrl: process.env['DIRECT_DATABASE_URL'],
 })
 
 async function main() {

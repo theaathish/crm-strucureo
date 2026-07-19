@@ -14,7 +14,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useApp } from "@/lib/store"
-import { REVENUE_DATA, MRR_DATA, PIPELINE_DATA } from "@/lib/data"
 import { useDashboard } from "@/hooks/use-dashboard"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import type { ChartConfig } from "@/components/ui/chart"
@@ -77,7 +76,7 @@ export function DashboardPage() {
   const {
     totalMRR, totalARR, pipelineValue, atRiskAccounts, avgMargin,
     qualifiedLeads, topAccounts, recentActivities, todayTasks,
-    activeProjects, openDeals,
+    activeProjects, openDeals, revenueData, mrrData, pipelineData,
   } = data!
 
   return (
@@ -129,7 +128,7 @@ export function DashboardPage() {
             <Badge variant="secondary" className="text-xs">6 months</Badge>
           </div>
           <ChartContainer config={revenueConfig} className="h-[200px] w-full">
-            <AreaChart data={REVENUE_DATA} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+            <AreaChart data={revenueData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="var(--color-revenue)" stopOpacity={0.12} />
@@ -155,7 +154,7 @@ export function DashboardPage() {
             </div>
           </div>
           <ChartContainer config={mrrConfig} className="h-[200px] w-full">
-            <BarChart data={MRR_DATA} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+            <BarChart data={mrrData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
               <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={v => `$${(v/1000).toFixed(0)}K`} />
@@ -177,7 +176,7 @@ export function DashboardPage() {
             </button>
           </div>
           <ChartContainer config={pipelineConfig} className="h-[180px] w-full">
-            <BarChart data={PIPELINE_DATA} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+            <BarChart data={pipelineData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
               <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
