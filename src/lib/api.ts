@@ -72,6 +72,8 @@ export const api = {
 
   // Users
   getUsers: () => request<any[]>('/users'),
+  createUser: (data: any) => request<any>('/users', { method: 'POST', body: JSON.stringify(data) }),
+  updateUser: (id: string, data: any) => request<any>(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
 
   // Activities
   getActivities: (entityType?: string, entityId?: string) => {
@@ -95,4 +97,7 @@ export const api = {
 
   // Dashboard
   getDashboard: () => request<any>('/dashboard'),
+
+  // Auth
+  login: (email: string, password: string) => request<any>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
 }

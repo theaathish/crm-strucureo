@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { prisma } from './_lib/prisma.js'
 import { cors } from './_lib/cors.js'
+import { hashPassword, verifyPassword } from './_lib/auth.js'
 
 type PrismaModel = {
   findMany: (args?: any) => Promise<any[]>
@@ -37,6 +38,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    // Handle login
+    if (entity === 'auth' && action === 'login' && req.method === 'POST') {
+      const { email, password } = req.body || {}
+      if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required' })
+      }
+      const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } })
+      if (!user || !verifyPassword(password, user.password)) {
+        return res.status(401).json({ error: 'Invalid email or password' })
+      }
+      const { password: _, ...userWithoutPassword } = user
+      return res.status(200).json(userWithoutPassword)
+    }
+
     // Handle dashboard
     if (entity === 'dashboard' && req.method === 'GET' && !id) {
       const [accounts, deals, leads, tasks, activities, projects] = await Promise.all([
@@ -136,6 +151,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (id) {
           const item = await model.findUnique({ where: { id }, include: includes })
           if (!item) return res.status(404).json({ error: 'Not found' })
+          if (entity === 'users' && item.password) delete item.password
           return res.status(200).json(item)
         }
         const where: Record<string, string> = {}
@@ -149,17 +165,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           ...(entity === 'notifications' ? { take: 50 } : {}),
           ...(entity === 'activities' ? { take: 50 } : {}),
         })
+        if (entity === 'users') {
+          items.forEach((u: any) => { delete u.password })
+        }
         return res.status(200).json(items)
       }
 
       case 'POST': {
+        if (entity === 'users' && req.body.password) {
+          req.body.password = hashPassword(req.body.password)
+        }
         const created = await model.create({ data: req.body })
+        if (entity === 'users' && created.password) delete created.password
         return res.status(201).json(created)
       }
 
       case 'PATCH': {
         if (!id) return res.status(400).json({ error: 'ID required' })
+        if (entity === 'users' && req.body.password) {
+          req.body.password = hashPassword(req.body.password)
+        }
         const updated = await model.update({ where: { id }, data: req.body })
+        if (entity === 'users' && updated.password) delete updated.password
         return res.status(200).json(updated)
       }
 

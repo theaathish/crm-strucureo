@@ -8,27 +8,21 @@ import { api } from "@/lib/api"
 export function LoginPage() {
   const { setCurrentUser, setCurrentPage } = useApp()
   const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email.trim()) return
+    if (!email.trim() || !password) return
 
     setLoading(true)
     setError("")
 
     try {
-      const { data: users, error } = await api.getUsers()
-      if (error || !users) {
-        setError("Failed to connect to server. Make sure the API is running.")
-        setLoading(false)
-        return
-      }
-
-      const user = users.find((u: any) => u.email.toLowerCase() === email.trim().toLowerCase())
-      if (!user) {
-        setError("No account found with that email.")
+      const { data: user, error: apiError } = await api.login(email.trim(), password)
+      if (apiError || !user) {
+        setError(apiError || "Invalid email or password.")
         setLoading(false)
         return
       }
@@ -61,13 +55,23 @@ export function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-foreground block mb-1.5">Email address</label>
+              <label className="text-sm font-medium text-foreground block mb-1.5">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="you@company.com"
+                placeholder="ceo@strucureo.com"
                 autoFocus
+                className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/30 transition-shadow"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground block mb-1.5">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Enter your password"
                 className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/30 transition-shadow"
               />
             </div>
@@ -76,15 +80,11 @@ export function LoginPage() {
               <p className="text-xs text-destructive bg-destructive/5 border border-destructive/20 rounded-lg p-2.5">{error}</p>
             )}
 
-            <Button type="submit" disabled={loading || !email.trim()} className="w-full h-9 text-sm gap-1.5">
+            <Button type="submit" disabled={loading || !email.trim() || !password} className="w-full h-9 text-sm gap-1.5">
               {loading ? <Loader2 className="size-4 animate-spin" /> : <LogIn className="size-4" />}
               Sign In
             </Button>
           </form>
-
-          <p className="text-[11px] text-muted-foreground text-center mt-4">
-            Enter any email from the seeded users list
-          </p>
         </div>
       </motion.div>
     </div>

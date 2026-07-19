@@ -1,19 +1,25 @@
 import 'dotenv/config'
 import { PrismaClient } from '../generated/prisma'
+import { createHash } from 'crypto'
 
 const prisma = new PrismaClient({
   datasourceUrl: process.env['DIRECT_DATABASE_URL'],
 })
 
+function hashPassword(password: string): string {
+  return createHash('sha256').update(password).digest('hex')
+}
+
 async function main() {
   console.log('Seeding database...')
 
   const users = await Promise.all([
-    prisma.user.create({ data: { name: 'Alex Rivera', email: 'alex@strucureo.com', role: 'owner', department: 'Executive' } }),
-    prisma.user.create({ data: { name: 'Jordan Kim', email: 'jordan@strucureo.com', role: 'growth', department: 'Sales' } }),
-    prisma.user.create({ data: { name: 'Sam Chen', email: 'sam@strucureo.com', role: 'rnd', department: 'R&D' } }),
-    prisma.user.create({ data: { name: 'Morgan Lee', email: 'morgan@strucureo.com', role: 'product', department: 'Product' } }),
-    prisma.user.create({ data: { name: 'Casey Brown', email: 'casey@strucureo.com', role: 'ai', department: 'AI' } }),
+    prisma.user.create({ data: { name: 'Supra CEO', email: 'ceo@strucureo.com', password: hashPassword('Supra@10'), role: 'owner', department: 'Executive' } }),
+    prisma.user.create({ data: { name: 'Alex Rivera', email: 'alex@strucureo.com', password: hashPassword('Supra@10'), role: 'owner', department: 'Executive' } }),
+    prisma.user.create({ data: { name: 'Jordan Kim', email: 'jordan@strucureo.com', password: hashPassword('Supra@10'), role: 'growth', department: 'Sales' } }),
+    prisma.user.create({ data: { name: 'Sam Chen', email: 'sam@strucureo.com', password: hashPassword('Supra@10'), role: 'rnd', department: 'R&D' } }),
+    prisma.user.create({ data: { name: 'Morgan Lee', email: 'morgan@strucureo.com', password: hashPassword('Supra@10'), role: 'product', department: 'Product' } }),
+    prisma.user.create({ data: { name: 'Casey Brown', email: 'casey@strucureo.com', password: hashPassword('Supra@10'), role: 'ai', department: 'AI' } }),
   ])
   console.log(`Created ${users.length} users`)
 
@@ -49,9 +55,9 @@ async function main() {
   console.log(`Created ${deals.length} deals`)
 
   const tasks = await Promise.all([
-    prisma.task.create({ data: { title: 'Follow up with James Wilson re: enterprise demo', status: 'todo', priority: 'high', assignedTo: users[1].id, dueDate: new Date('2025-01-20'), relatedType: 'lead', relatedId: leads[0].id, relatedName: 'James Wilson', tags: ['sales', 'demo'] } }),
-    prisma.task.create({ data: { title: 'Prepare Q1 pipeline report', status: 'in_progress', priority: 'urgent', assignedTo: users[0].id, dueDate: new Date('2025-01-25'), tags: ['reporting', 'board'] } }),
-    prisma.task.create({ data: { title: 'Send renewal proposal to DataFlow', status: 'in_progress', priority: 'high', assignedTo: users[1].id, dueDate: new Date('2025-01-19'), tags: ['sales', 'renewal'] } }),
+    prisma.task.create({ data: { title: 'Follow up with James Wilson re: enterprise demo', status: 'todo', priority: 'high', assignedTo: users[1].id, dueDate: new Date(Date.now() + 3 * 86400000), relatedType: 'lead', relatedId: leads[0].id, relatedName: 'James Wilson', tags: ['sales', 'demo'] } }),
+    prisma.task.create({ data: { title: 'Prepare Q1 pipeline report', status: 'in_progress', priority: 'urgent', assignedTo: users[0].id, dueDate: new Date(Date.now() + 7 * 86400000), tags: ['reporting', 'board'] } }),
+    prisma.task.create({ data: { title: 'Send renewal proposal to DataFlow', status: 'in_progress', priority: 'high', assignedTo: users[1].id, dueDate: new Date(Date.now() + 5 * 86400000), tags: ['sales', 'renewal'] } }),
   ])
   console.log(`Created ${tasks.length} tasks`)
 
