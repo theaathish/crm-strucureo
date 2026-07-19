@@ -1,10 +1,13 @@
 import 'dotenv/config'
-import { PrismaClient } from '../generated/prisma'
+import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 import { createHash } from 'crypto'
 
-const prisma = new PrismaClient({
-  datasourceUrl: process.env['DIRECT_DATABASE_URL'],
-})
+const directUrl = process.env['DIRECT_DATABASE_URL']
+if (!directUrl) throw new Error('DIRECT_DATABASE_URL is not set')
+
+const adapter = new PrismaPg({ connectionString: directUrl })
+const prisma = new PrismaClient({ adapter })
 
 function hashPassword(password: string): string {
   return createHash('sha256').update(password).digest('hex')
@@ -13,64 +16,257 @@ function hashPassword(password: string): string {
 async function main() {
   console.log('Seeding database...')
 
-  const users = await Promise.all([
-    prisma.user.create({ data: { name: 'Supra CEO', email: 'ceo@strucureo.com', password: hashPassword('Supra@10'), role: 'owner', department: 'Executive' } }),
-    prisma.user.create({ data: { name: 'Alex Rivera', email: 'alex@strucureo.com', password: hashPassword('Supra@10'), role: 'owner', department: 'Executive' } }),
-    prisma.user.create({ data: { name: 'Jordan Kim', email: 'jordan@strucureo.com', password: hashPassword('Supra@10'), role: 'growth', department: 'Sales' } }),
-    prisma.user.create({ data: { name: 'Sam Chen', email: 'sam@strucureo.com', password: hashPassword('Supra@10'), role: 'rnd', department: 'R&D' } }),
-    prisma.user.create({ data: { name: 'Morgan Lee', email: 'morgan@strucureo.com', password: hashPassword('Supra@10'), role: 'product', department: 'Product' } }),
-    prisma.user.create({ data: { name: 'Casey Brown', email: 'casey@strucureo.com', password: hashPassword('Supra@10'), role: 'ai', department: 'AI' } }),
-  ])
-  console.log(`Created ${users.length} users`)
+  // Clean in order (foreign keys)
+  await prisma.pilot.deleteMany()
+  await prisma.project.deleteMany()
+  await prisma.task.deleteMany()
+  await prisma.activity.deleteMany()
+  await prisma.notification.deleteMany()
+  await prisma.deal.deleteMany()
+  await prisma.contact.deleteMany()
+  await prisma.lead.deleteMany()
+  await prisma.account.deleteMany()
+  await prisma.user.deleteMany()
 
-  const accounts = await Promise.all([
-    prisma.account.create({ data: { name: 'Nexus Analytics', industry: 'Data & Analytics', website: 'nexusanalytics.com', mrr: 12500, arr: 150000, employees: 340, country: 'US', status: 'active', tier: 'enterprise', health: 'healthy', contractValue: 180000, margin: 68 } }),
-    prisma.account.create({ data: { name: 'TechCorp Inc', industry: 'Software', website: 'techcorp.com', mrr: 8750, arr: 105000, employees: 220, country: 'US', status: 'active', tier: 'enterprise', health: 'healthy', contractValue: 120000, margin: 72 } }),
-    prisma.account.create({ data: { name: 'Cloud Nine Tech', industry: 'Cloud Services', website: 'cloudnine.com', mrr: 18000, arr: 216000, employees: 580, country: 'US', status: 'active', tier: 'enterprise', health: 'healthy', contractValue: 250000, margin: 75 } }),
-    prisma.account.create({ data: { name: 'FutureStack AI', industry: 'Artificial Intelligence', website: 'futurestack.ai', mrr: 22000, arr: 264000, employees: 120, country: 'US', status: 'active', tier: 'enterprise', health: 'healthy', contractValue: 300000, margin: 80 } }),
-  ])
-  console.log(`Created ${accounts.length} accounts`)
+  const now = new Date()
+  const daysAgo = (d: number) => new Date(now.getTime() - d * 86400000)
+  const daysFromNow = (d: number) => new Date(now.getTime() + d * 86400000)
 
-  const leads = await Promise.all([
-    prisma.lead.create({ data: { name: 'James Wilson', company: 'TechCorp Inc', email: 'james@techcorp.com', phone: '+1 555 0101', status: 'qualified', source: 'Inbound', score: 87, value: 45000, assignedTo: users[1].id } }),
-    prisma.lead.create({ data: { name: 'Emma Davis', company: 'Cloud Nine Tech', email: 'emma@cloudnine.com', phone: '+1 555 0104', status: 'qualified', source: 'Website', score: 91, value: 120000, assignedTo: users[1].id } }),
-    prisma.lead.create({ data: { name: 'Olivia Brown', company: 'FutureStack AI', email: 'olivia@futurestack.ai', phone: '+1 555 0108', status: 'qualified', source: 'Inbound', score: 78, value: 67000, assignedTo: users[0].id } }),
-  ])
-  console.log(`Created ${leads.length} leads`)
+  const hashedPassword = hashPassword('Supra@10')
 
-  const contacts = await Promise.all([
-    prisma.contact.create({ data: { name: 'Lisa Park', email: 'lisa@nexusanalytics.com', phone: '+1 555 0201', title: 'VP of Engineering', accountId: accounts[0].id, accountName: 'Nexus Analytics', type: 'primary' } }),
-    prisma.contact.create({ data: { name: 'James Wilson', email: 'james@techcorp.com', phone: '+1 555 0101', title: 'CTO', accountId: accounts[1].id, accountName: 'TechCorp Inc', type: 'primary' } }),
-    prisma.contact.create({ data: { name: 'Emma Davis', email: 'emma@cloudnine.com', phone: '+1 555 0104', title: 'CEO', accountId: accounts[2].id, accountName: 'Cloud Nine Tech', type: 'executive' } }),
-    prisma.contact.create({ data: { name: 'Olivia Brown', email: 'olivia@futurestack.ai', phone: '+1 555 0108', title: 'Head of Partnerships', accountId: accounts[3].id, accountName: 'FutureStack AI', type: 'primary' } }),
-  ])
-  console.log(`Created ${contacts.length} contacts`)
+  // Users
+  const ceo = await prisma.user.create({
+    data: {
+      name: 'Aathish S',
+      email: 'ceo@strucureo.com',
+      password: hashedPassword,
+      role: 'CEO',
+      department: 'Executive',
+    },
+  })
 
-  const deals = await Promise.all([
-    prisma.deal.create({ data: { title: 'Nexus Analytics - Enterprise Expansion', value: 180000, stage: 'negotiation', probability: 75, accountId: accounts[0].id, accountName: 'Nexus Analytics', assignedTo: users[0].id, description: 'Expanding license to 500 seats' } }),
-    prisma.deal.create({ data: { title: 'TechCorp - Platform Upgrade', value: 120000, stage: 'proposal', probability: 55, accountId: accounts[1].id, accountName: 'TechCorp Inc', assignedTo: users[1].id, description: 'Migrating to enterprise tier' } }),
-    prisma.deal.create({ data: { title: 'Cloud Nine - New Module', value: 85000, stage: 'discovery', probability: 30, accountId: accounts[2].id, accountName: 'Cloud Nine Tech', assignedTo: users[1].id, description: 'AI automation module' } }),
-    prisma.deal.create({ data: { title: 'FutureStack - Premium Support', value: 45000, stage: 'closed_won', probability: 100, accountId: accounts[3].id, accountName: 'FutureStack AI', assignedTo: users[0].id, description: '24/7 dedicated support package' } }),
-  ])
-  console.log(`Created ${deals.length} deals`)
+  const usersData = [
+    { name: 'Priya Mehta', email: 'priya@strucureo.com', role: 'VP of Sales', department: 'Sales' },
+    { name: 'Vikram Joshi', email: 'vikram@strucureo.com', role: 'Senior Account Executive', department: 'Sales' },
+    { name: 'Neha Kapoor', email: 'neha@strucureo.com', role: 'Business Development Representative', department: 'Sales' },
+    { name: 'Arjun Nair', email: 'arjun@strucureo.com', role: 'Head of Marketing', department: 'Marketing' },
+  ]
 
-  const tasks = await Promise.all([
-    prisma.task.create({ data: { title: 'Follow up with James Wilson re: enterprise demo', status: 'todo', priority: 'high', assignedTo: users[1].id, dueDate: new Date(Date.now() + 3 * 86400000), relatedType: 'lead', relatedId: leads[0].id, relatedName: 'James Wilson', tags: ['sales', 'demo'] } }),
-    prisma.task.create({ data: { title: 'Prepare Q1 pipeline report', status: 'in_progress', priority: 'urgent', assignedTo: users[0].id, dueDate: new Date(Date.now() + 7 * 86400000), tags: ['reporting', 'board'] } }),
-    prisma.task.create({ data: { title: 'Send renewal proposal to DataFlow', status: 'in_progress', priority: 'high', assignedTo: users[1].id, dueDate: new Date(Date.now() + 5 * 86400000), tags: ['sales', 'renewal'] } }),
-  ])
-  console.log(`Created ${tasks.length} tasks`)
+  const createdUsers = []
+  for (const u of usersData) {
+    const user = await prisma.user.create({ data: { ...u, password: hashedPassword } })
+    createdUsers.push(user)
+  }
+  const allUsers = [ceo, ...createdUsers]
 
-  const activities = await Promise.all([
-    prisma.activity.create({ data: { type: 'call', description: 'Discovery call with James Wilson - discussed platform needs', entityType: 'lead', entityId: leads[0].id, entityName: 'James Wilson', userId: users[1].id, userName: 'Jordan Kim' } }),
-    prisma.activity.create({ data: { type: 'deal', description: "Deal 'FutureStack - Premium Support' moved to Closed Won", entityType: 'deal', entityId: deals[3].id, entityName: 'FutureStack - Premium Support', userId: users[0].id, userName: 'Alex Rivera' } }),
-    prisma.activity.create({ data: { type: 'email', description: 'Sent renewal proposal to DataFlow Systems team', entityType: 'deal', entityId: deals[2].id, entityName: 'DataFlow - Annual Renewal', userId: users[1].id, userName: 'Jordan Kim' } }),
-  ])
-  console.log(`Created ${activities.length} activities`)
+  // Accounts
+  const accountsData = [
+    { name: 'TechNova Solutions', industry: 'SaaS', tier: 'enterprise', website: 'https://technova.io', employees: 450, arr: 25000000, mrr: 2083333, country: 'USA', status: 'active', health: 'healthy', contractValue: 250000, margin: 35 },
+    { name: 'GreenLeaf Organics', industry: 'Manufacturing', tier: 'mid-market', website: 'https://greenleaf.com', employees: 180, arr: 12000000, mrr: 1000000, country: 'USA', status: 'active', health: 'healthy', contractValue: 180000, margin: 28 },
+    { name: 'UrbanEdge Properties', industry: 'Real Estate', tier: 'mid-market', website: 'https://urbanedge.com', employees: 320, arr: 35000000, mrr: 2916667, country: 'USA', status: 'active', health: 'at_risk', contractValue: 120000, margin: 22 },
+    { name: 'CloudSync Technologies', industry: 'Cloud Services', tier: 'enterprise', website: 'https://cloudsync.io', employees: 600, arr: 50000000, mrr: 4166667, country: 'USA', status: 'active', health: 'healthy', contractValue: 350000, margin: 42 },
+    { name: 'Meridian Healthcare', industry: 'Healthcare', tier: 'enterprise', website: 'https://meridianhealth.com', employees: 850, arr: 75000000, mrr: 6250000, country: 'USA', status: 'active', health: 'healthy', contractValue: 200000, margin: 30 },
+    { name: 'Apex Manufacturing', industry: 'Manufacturing', tier: 'mid-market', website: 'https://apexmfg.com', employees: 420, arr: 30000000, mrr: 2500000, country: 'USA', status: 'active', health: 'healthy', contractValue: 150000, margin: 25 },
+    { name: 'BrightStar Education', industry: 'Education', tier: 'smb', website: 'https://brightstar.edu', employees: 95, arr: 8000000, mrr: 666667, country: 'USA', status: 'active', health: 'healthy', contractValue: 75000, margin: 20 },
+    { name: 'Velocity Logistics', industry: 'Logistics', tier: 'mid-market', website: 'https://velocitylog.com', employees: 280, arr: 20000000, mrr: 1666667, country: 'USA', status: 'active', health: 'at_risk', contractValue: 220000, margin: 30 },
+    { name: 'CoreStack Analytics', industry: 'Data Analytics', tier: 'smb', website: 'https://corestack.io', employees: 65, arr: 5000000, mrr: 416667, country: 'USA', status: 'active', health: 'healthy', contractValue: 95000, margin: 18 },
+    { name: 'Pinnacle Financial', industry: 'Finance', tier: 'enterprise', website: 'https://pinnaclefin.com', employees: 1200, arr: 100000000, mrr: 8333333, country: 'USA', status: 'active', health: 'healthy', contractValue: 400000, margin: 38 },
+    { name: 'Summit Energy', industry: 'Energy', tier: 'mid-market', website: 'https://summitenergy.com', employees: 350, arr: 40000000, mrr: 3333333, country: 'USA', status: 'active', health: 'healthy', contractValue: 95000, margin: 27 },
+    { name: 'Horizon Media Group', industry: 'Media', tier: 'smb', website: 'https://horizonmedia.com', employees: 75, arr: 6000000, mrr: 500000, country: 'USA', status: 'active', health: 'healthy', contractValue: 60000, margin: 15 },
+  ]
 
-  console.log('Seeding complete!')
+  const createdAccounts = []
+  for (const a of accountsData) {
+    const account = await prisma.account.create({ data: a })
+    createdAccounts.push(account)
+  }
+
+  // Contacts
+  const contactsData = [
+    { name: 'David Chen', title: 'CTO', email: 'david.chen@technova.io', phone: '+1-555-1001' },
+    { name: 'Sarah Williams', title: 'VP Engineering', email: 'sarah.w@technova.io', phone: '+1-555-1002' },
+    { name: 'Michael Brown', title: 'CEO', email: 'michael@greenleaf.com', phone: '+1-555-1003' },
+    { name: 'Lisa Anderson', title: 'COO', email: 'lisa.a@urbanedge.com', phone: '+1-555-1004' },
+    { name: 'Robert Taylor', title: 'VP Operations', email: 'r.taylor@cloudsync.io', phone: '+1-555-1005' },
+    { name: 'Jennifer Martinez', title: 'CIO', email: 'jennifer.m@meridianhealth.com', phone: '+1-555-1006' },
+    { name: 'James Wilson', title: 'Director of IT', email: 'james.w@apexmfg.com', phone: '+1-555-1007' },
+    { name: 'Amanda Lee', title: 'Dean', email: 'amanda.lee@brightstar.edu', phone: '+1-555-1008' },
+    { name: 'Kevin Garcia', title: 'VP Supply Chain', email: 'kevin.g@velocitylog.com', phone: '+1-555-1009' },
+    { name: 'Rachel Thompson', title: 'Head of Analytics', email: 'rachel@corestack.io', phone: '+1-555-1010' },
+    { name: 'Daniel Kim', title: 'Managing Director', email: 'daniel.k@pinnaclefin.com', phone: '+1-555-1011' },
+    { name: 'Sophia Patel', title: 'CFO', email: 'sophia.p@summitenergy.com', phone: '+1-555-1012' },
+  ]
+
+  const createdContacts = []
+  for (let i = 0; i < contactsData.length; i++) {
+    const contact = await prisma.contact.create({
+      data: {
+        ...contactsData[i],
+        accountId: createdAccounts[i % createdAccounts.length].id,
+        accountName: createdAccounts[i % createdAccounts.length].name,
+      },
+    })
+    createdContacts.push(contact)
+  }
+
+  // Leads
+  const leadsData = [
+    { name: 'Tom Harris', company: 'InnovateTech', email: 'tom@innovatetech.com', phone: '+1-555-2001', source: 'website', status: 'new', score: 75, value: 80000 },
+    { name: 'Maria Gonzalez', company: 'DataFlow Systems', email: 'maria@dataflow.com', phone: '+1-555-2002', source: 'referral', status: 'contacted', score: 60, value: 50000 },
+    { name: 'Chris Johnson', company: 'NextGen Solutions', email: 'chris@nextgen.com', phone: '+1-555-2003', source: 'linkedin', status: 'qualified', score: 85, value: 120000 },
+    { name: 'Emily White', company: 'ProScale Inc', email: 'emily@proscale.com', phone: '+1-555-2004', source: 'event', status: 'qualified', score: 70, value: 95000 },
+    { name: 'Andrew Davis', company: 'Quantum Labs', email: 'andrew@quantumlabs.com', phone: '+1-555-2005', source: 'cold_call', status: 'new', score: 40, value: 30000 },
+    { name: 'Nicole Robinson', company: 'SkyHigh Cloud', email: 'nicole@skyhigh.com', phone: '+1-555-2006', source: 'website', status: 'contacted', score: 55, value: 65000 },
+    { name: 'Brian Clark', company: 'FusionWorks', email: 'brian@fusionworks.com', phone: '+1-555-2007', source: 'referral', status: 'qualified', score: 80, value: 110000 },
+    { name: 'Michelle Lewis', company: 'PrimeEdge Corp', email: 'michelle@primeedge.com', phone: '+1-555-2008', source: 'linkedin', status: 'new', score: 45, value: 40000 },
+    { name: 'Ryan Walker', company: 'NovaStar Inc', email: 'ryan@novastar.com', phone: '+1-555-2009', source: 'website', status: 'contacted', score: 65, value: 75000 },
+    { name: 'Laura Hall', company: 'CyberShield Security', email: 'laura@cybershield.com', phone: '+1-555-2010', source: 'event', status: 'qualified', score: 90, value: 150000 },
+  ]
+
+  for (const l of leadsData) {
+    await prisma.lead.create({ data: { ...l, assignedTo: allUsers[leadsData.indexOf(l) % allUsers.length].id } })
+  }
+
+  // Deals
+  const dealsData = [
+    { title: 'TechNova Enterprise License', value: 250000, stage: 'closing', probability: 90, expectedCloseDate: daysFromNow(14) },
+    { title: 'GreenLeaf Digital Transformation', value: 180000, stage: 'proposal', probability: 60, expectedCloseDate: daysFromNow(30) },
+    { title: 'UrbanEdge CRM Integration', value: 120000, stage: 'negotiation', probability: 75, expectedCloseDate: daysFromNow(21) },
+    { title: 'CloudSync Platform Migration', value: 350000, stage: 'discovery', probability: 30, expectedCloseDate: daysFromNow(60) },
+    { title: 'Meridian Healthcare Analytics', value: 200000, stage: 'won', probability: 100, expectedCloseDate: daysAgo(5) },
+    { title: 'Apex Manufacturing IoT', value: 150000, stage: 'proposal', probability: 50, expectedCloseDate: daysFromNow(45) },
+    { title: 'BrightStar EdTech Platform', value: 75000, stage: 'negotiation', probability: 80, expectedCloseDate: daysFromNow(10) },
+    { title: 'Velocity Fleet Management', value: 220000, stage: 'discovery', probability: 25, expectedCloseDate: daysFromNow(90) },
+    { title: 'Pinnacle Compliance Suite', value: 400000, stage: 'proposal', probability: 55, expectedCloseDate: daysFromNow(35) },
+    { title: 'Summit Energy Dashboard', value: 95000, stage: 'closing', probability: 95, expectedCloseDate: daysFromNow(7) },
+  ]
+
+  const createdDeals = []
+  for (let i = 0; i < dealsData.length; i++) {
+    const deal = await prisma.deal.create({
+      data: {
+        ...dealsData[i],
+        accountId: createdAccounts[i % createdAccounts.length].id,
+        accountName: createdAccounts[i % createdAccounts.length].name,
+        contactId: createdContacts[i % createdContacts.length].id,
+        assignedTo: allUsers[i % allUsers.length].id,
+        description: `Strategic deal for ${createdAccounts[i % createdAccounts.length].name}`,
+      },
+    })
+    createdDeals.push(deal)
+  }
+
+  // Projects
+  const projectsData = [
+    { name: 'TechNova Implementation', status: 'in_progress', progress: 65, startDate: daysAgo(30), endDate: daysFromNow(45), budget: 150000, spent: 97500, margin: 35 },
+    { name: 'GreenLeaf Data Migration', status: 'in_progress', progress: 40, startDate: daysAgo(15), endDate: daysFromNow(60), budget: 80000, spent: 32000, margin: 28 },
+    { name: 'Meridian Analytics Dashboard', status: 'completed', progress: 100, startDate: daysAgo(90), endDate: daysAgo(5), budget: 200000, spent: 185000, margin: 30 },
+    { name: 'UrbanEdge CRM Setup', status: 'in_progress', progress: 25, startDate: daysAgo(7), endDate: daysFromNow(75), budget: 120000, spent: 30000, margin: 22 },
+    { name: 'Pinnacle Compliance Module', status: 'planning', progress: 10, startDate: daysFromNow(14), endDate: daysFromNow(120), budget: 250000, spent: 25000, margin: 38 },
+    { name: 'Summit Energy Integration', status: 'in_progress', progress: 80, startDate: daysAgo(45), endDate: daysFromNow(7), budget: 95000, spent: 76000, margin: 27 },
+  ]
+
+  const createdProjects = []
+  for (let i = 0; i < projectsData.length; i++) {
+    const project = await prisma.project.create({
+      data: {
+        ...projectsData[i],
+        accountId: createdAccounts[i % createdAccounts.length].id,
+        accountName: createdAccounts[i % createdAccounts.length].name,
+        assignedTo: [allUsers[i % allUsers.length].id],
+      },
+    })
+    createdProjects.push(project)
+  }
+
+  // Pilots
+  const pilotsData = [
+    { name: 'AI-Powered Analytics Pilot', status: 'active', startDate: daysAgo(20), endDate: daysFromNow(30), value: 50000, outcomes: 'Testing ML models for predictive analytics', description: 'Testing ML models for predictive analytics' },
+    { name: 'IoT Sensor Integration', status: 'active', startDate: daysAgo(10), endDate: daysFromNow(50), value: 35000, outcomes: 'Evaluating IoT platform for manufacturing', description: 'Evaluating IoT platform for manufacturing' },
+    { name: 'Blockchain Supply Chain', status: 'completed', startDate: daysAgo(60), endDate: daysAgo(10), value: 40000, outcomes: 'Successful pilot with 3 suppliers', description: 'Blockchain supply chain pilot' },
+    { name: 'Edge Computing Demo', status: 'proposed', startDate: daysFromNow(7), endDate: daysFromNow(45), value: 25000, outcomes: 'Planning phase for edge deployment', description: 'Edge computing demonstration' },
+  ]
+
+  for (let i = 0; i < pilotsData.length; i++) {
+    await prisma.pilot.create({
+      data: {
+        ...pilotsData[i],
+        accountId: createdAccounts[i].id,
+        accountName: createdAccounts[i].name,
+        contactId: createdContacts[i].id,
+      },
+    })
+  }
+
+  // Tasks
+  const tasksData = [
+    { title: 'Follow up with TechNova on contract renewal', status: 'todo', priority: 'high', dueDate: daysFromNow(3) },
+    { title: 'Prepare Q4 sales forecast', status: 'in_progress', priority: 'high', dueDate: daysFromNow(7) },
+    { title: 'Schedule product demo for CloudSync', status: 'todo', priority: 'medium', dueDate: daysFromNow(14) },
+    { title: 'Review GreenLeaf proposal document', status: 'done', priority: 'medium', dueDate: daysAgo(2) },
+    { title: 'Send onboarding materials to Meridian', status: 'done', priority: 'low', dueDate: daysAgo(5) },
+    { title: 'Update CRM with UrbanEdge meeting notes', status: 'todo', priority: 'high', dueDate: daysFromNow(1) },
+    { title: 'Coordinate with engineering on Pinnacle requirements', status: 'in_progress', priority: 'medium', dueDate: daysFromNow(10) },
+    { title: 'Prepare Summit go-live checklist', status: 'todo', priority: 'high', dueDate: daysFromNow(5) },
+    { title: 'Draft case study for BrightStar project', status: 'todo', priority: 'low', dueDate: daysFromNow(21) },
+    { title: 'Quarterly business review presentation', status: 'in_progress', priority: 'high', dueDate: daysFromNow(14) },
+    { title: 'Update lead scoring model parameters', status: 'todo', priority: 'medium', dueDate: daysFromNow(7) },
+    { title: 'Schedule Apex factory visit', status: 'todo', priority: 'low', dueDate: daysFromNow(30) },
+  ]
+
+  for (let i = 0; i < tasksData.length; i++) {
+    await prisma.task.create({
+      data: {
+        ...tasksData[i],
+        assignedTo: allUsers[i % allUsers.length].id,
+        relatedType: i < 5 ? 'deal' : i < 8 ? 'project' : undefined,
+        relatedId: i < 5 ? createdDeals[i].id : i < 8 ? createdProjects[i - 5].id : undefined,
+        relatedName: i < 5 ? createdDeals[i].title : i < 8 ? createdProjects[i - 5].name : undefined,
+      },
+    })
+  }
+
+  // Activities
+  const activityTypes = ['call', 'email', 'meeting', 'note', 'task']
+  for (let i = 0; i < 20; i++) {
+    await prisma.activity.create({
+      data: {
+        type: activityTypes[i % activityTypes.length],
+        description: `Completed ${activityTypes[i % activityTypes.length]} regarding project discussion and next steps.`,
+        entityType: i < 10 ? 'account' : 'deal',
+        entityId: i < 10 ? createdAccounts[i % createdAccounts.length].id : createdDeals[i % createdDeals.length].id,
+        entityName: i < 10 ? createdAccounts[i % createdAccounts.length].name : createdDeals[i % createdDeals.length].title,
+        userId: allUsers[i % allUsers.length].id,
+        userName: allUsers[i % allUsers.length].name,
+      },
+    })
+  }
+
+  // Notifications
+  const notificationsData = [
+    { title: 'New deal created', message: 'TechNova Enterprise License has been added to the pipeline', type: 'info', entityType: 'deal' },
+    { title: 'Task overdue', message: 'Update CRM with UrbanEdge meeting notes is overdue', type: 'warning', entityType: 'task' },
+    { title: 'Deal won!', message: 'Meridian Healthcare Analytics deal closed at $200K', type: 'success', entityType: 'deal' },
+    { title: 'New lead assigned', message: 'Tom Harris from InnovateTech has been assigned to you', type: 'info', entityType: 'lead' },
+    { title: 'Project milestone', message: 'TechNova Implementation has reached 65% completion', type: 'info', entityType: 'project' },
+  ]
+
+  for (const n of notificationsData) {
+    await prisma.notification.create({
+      data: { ...n, userId: ceo.id },
+    })
+  }
+
+  console.log('Database seeded successfully!')
+  console.log(`Created ${allUsers.length} users, ${createdAccounts.length} accounts, ${createdContacts.length} contacts, ${leadsData.length} leads, ${createdDeals.length} deals, ${createdProjects.length} projects`)
+  console.log('\nLogin: ceo@strucureo.com / Supra@10')
 }
 
 main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect())
+  .catch((e) => {
+    console.error(e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })
