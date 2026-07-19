@@ -28,7 +28,8 @@ const models: Record<string, { model: PrismaModel; includes?: Record<string, boo
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (cors(req, res)) return
 
-  const pathParts = (req.query.path as string[]) || []
+  const url = new URL(req.url || '', 'https://example.com')
+  const pathParts = url.pathname.replace(/^\/api\//, '').split('/').filter(Boolean)
   const entity = pathParts[0]
   const id = pathParts[1]
   const action = pathParts[2]
